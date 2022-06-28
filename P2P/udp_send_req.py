@@ -12,7 +12,5 @@ def udp_send_req(host, port, request):
         data_header = udp_socket.recv(2048)
         header_lines = data_header.decode().strip().split("\n")
 
-        udp_socket.close()
-
     return header_lines[0].split(': ')[1], header_lines[1].split(': ')[1], header_lines[2].split('/')[1], \
            header_lines[3].split(': ')[1], header_lines[4].split('/')[1], header_lines[5].split(': ')[1]

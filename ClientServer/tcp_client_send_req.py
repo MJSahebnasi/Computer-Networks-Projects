@@ -6,7 +6,9 @@ def main_process(host, port, request):
         tcp_socket.connect((host, port))
         tcp_socket.sendall(request.encode('UTF-8'))
 
+        print('**')
         data_header = tcp_socket.recv(2048)
+        print('tcp data received')
 
         # this part of data is string, so it's OK to use decode() for it:
         # (but for image bits, it is not)
@@ -16,8 +18,6 @@ def main_process(host, port, request):
         data_body = tcp_socket.recv(2048)
         while len(data_body) < expected_data_len:
             data_body += tcp_socket.recv(2048)
-
-        tcp_socket.close()
 
     return data_body
 
