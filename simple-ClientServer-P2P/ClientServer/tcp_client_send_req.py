@@ -6,7 +6,6 @@ def main_process(host, port, request):
         tcp_socket.connect((host, port))
         tcp_socket.sendall(request.encode('UTF-8'))
 
-        print('**')
         data_header = tcp_socket.recv(2048)
         print('tcp data received')
 
