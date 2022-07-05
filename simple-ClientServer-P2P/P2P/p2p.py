@@ -14,6 +14,7 @@ def block_requester(q, ip, port, received_bytes_list, blocks_num):
         except queue.Empty:
             print('q empty')
             return
+        # don't try to lower this mf or the server will block you:
         time.sleep(2)
         if parallel_tcp_client_send_req(ip, port, 'GET Redsox.jpg:' + str(work) + '\n', received_bytes_list, work) \
                 is not None:
@@ -72,8 +73,7 @@ def p2p_request_file(host, port, request):
 
     print('\nsending parallel requests for data blocks ...')
     data_block_queue = queue.Queue()
-    # for i in range(num_blocks+2):
-    for i in range(83):
+    for i in range(num_blocks+1):
         data_block_queue.put_nowait(i)
     i = 0
     while not data_block_queue.empty():
@@ -83,6 +83,7 @@ def p2p_request_file(host, port, request):
         t.setDaemon(True)
         t.start()
 
+        # don't try to lower this mf or the server will block you:
         time.sleep(2)
         print(' -> threads count:', i+1)
         i += 1
