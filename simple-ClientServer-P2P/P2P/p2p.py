@@ -1,22 +1,26 @@
 import queue
 import threading
 import time
-from threading import Thread
 
 from ClientServer.tcp_client_send_req import parallel_tcp_client_send_req
 from P2P.udp_send_req import udp_send_req
+import meta_data
 
 
-def block_requester(q, ip, port, received_bytes_list):
+def block_requester(q, ip, port, received_bytes_list, blocks_num):
     while True:
         try:
             work = q.get()
         except queue.Empty:
+            print('q empty')
             return
         time.sleep(2)
-        parallel_tcp_client_send_req(ip, port, 'GET Redsox.jpg:' + str(work) + '\n', received_bytes_list, work - 1)
-        q.task_done()
-        print(received_bytes_list)
+        if parallel_tcp_client_send_req(ip, port, 'GET Redsox.jpg:' + str(work) + '\n', received_bytes_list, work - 1) \
+                is not None:
+            received_data_perc = (blocks_num - received_bytes_list.count(None)) * 100 / blocks_num
+            print('received blocks:', received_data_perc, '%')
+            q.task_done()
+        # print(received_bytes_list)
 
 
 def p2p_request_file(host, port, request):
@@ -28,6 +32,17 @@ def p2p_request_file(host, port, request):
     port1 = int(port1)
     port2 = int(port2)
 
+    print()
+    print('meta data:')
+    print('num_blocks:', num_blocks)
+    print('file_size:', file_size)
+    print('port1:', port1)
+    print('port2:', port2)
+    print()
+
+    meta_data.global_file_size = file_size
+    meta_data.global_num_blocks = num_blocks
+
     peer_IPs = [ip1, ip2]
     peer_ports = [int(port1), int(port2)]
 
@@ -35,7 +50,7 @@ def p2p_request_file(host, port, request):
     received_bytes_list = [None for i in range(num_blocks)]
 
     # getting more peer addresses:
-    tries = 1
+    tries = 2
     for i in range(tries):
         # this 2s delay is achieved by trial and error:
         # (smaller values will lead to being blocked by the server)
@@ -51,32 +66,29 @@ def p2p_request_file(host, port, request):
 
     print('peer addresses achieved (IP,port):', [adr for adr in zip(peer_IPs, peer_ports)])
 
-    print('sending parallel requests for data blocks ...')
+    ################
+    # parallel_tcp_client_send_req(ip1, int(port1), 'GET Redsox.jpg:' + str(100) + '\n', received_bytes_list, 0)
+    # print('received_bytes_list:', received_bytes_list)
+    ###############
 
-    # # # attempt 1: failed (tcp connections kept getting closed) #
-    # i = 0
-    # while to_be_requested_block <= num_blocks:
-    #     time.sleep(2)
-    #     ip = peer_IPs[i]
-    #     port = peer_ports[i]
-    #     thread = Thread(target=parallel_tcp_client_send_req,
-    #                     args=(ip, port, 'GET Redsox.jpg:' + str(to_be_requested_block), received_bytes_list,
-    #                           to_be_requested_block - 1))
-    #     print('block', to_be_requested_block, 'requested')
-    #     print(received_bytes_list)
-    #     to_be_requested_block += 1
-    #     thread.start()
-    #     i = (i + 1) % len(peer_IPs)
-
-    # # # attempt2:
+    print('\nsending parallel requests for data blocks ...')
     data_block_queue = queue.Queue()
-    for i in range(1, num_blocks + 1):
+    for i in range(0, num_blocks):
         data_block_queue.put_nowait(i)
-    for i in range(len(peer_IPs)):
-        threading.Thread(target=block_requester,
-                         args=(data_block_queue, peer_IPs[i], peer_ports[i], received_bytes_list)).start()
+    i = 0
+    while not data_block_queue.empty():
+        t = threading.Thread(target=block_requester,
+                             args=(data_block_queue, peer_IPs[i % len(peer_IPs)], peer_ports[i % len(peer_IPs)],
+                                   received_bytes_list, num_blocks))
+        t.setDaemon(True)
+        t.start()
+
+        time.sleep(2)
+        print(' -> threads count:', i)
+        i += 1
+
     data_block_queue.join()
-    print('all data received.')
+    print('\nall data received.')
 
     print()
     data = received_bytes_list[0]
