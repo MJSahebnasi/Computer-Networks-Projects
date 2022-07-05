@@ -15,7 +15,7 @@ def block_requester(q, ip, port, received_bytes_list, blocks_num):
             print('q empty')
             return
         time.sleep(2)
-        if parallel_tcp_client_send_req(ip, port, 'GET Redsox.jpg:' + str(work) + '\n', received_bytes_list, work - 1) \
+        if parallel_tcp_client_send_req(ip, port, 'GET Redsox.jpg:' + str(work) + '\n', received_bytes_list, work) \
                 is not None:
             received_data_perc = (blocks_num - received_bytes_list.count(None)) * 100 / blocks_num
             print('received blocks:', received_data_perc, '%')
@@ -28,6 +28,10 @@ def p2p_request_file(host, port, request):
     num_blocks, file_size, ip1, port1, ip2, port2 = udp_send_req(host, port, request)
 
     num_blocks = int(num_blocks)
+    # the idiots don't actually return the Number of block
+    # took me hours to find out
+    num_blocks += 1
+
     file_size = int(file_size)
     port1 = int(port1)
     port2 = int(port2)
@@ -46,8 +50,8 @@ def p2p_request_file(host, port, request):
     peer_IPs = [ip1, ip2]
     peer_ports = [int(port1), int(port2)]
 
-    to_be_requested_block = 1
-    received_bytes_list = [None for i in range(num_blocks)]
+    to_be_requested_block = 0
+    received_bytes_list = [None for _ in range(num_blocks+1)]
 
     # getting more peer addresses:
     tries = 2
@@ -66,14 +70,10 @@ def p2p_request_file(host, port, request):
 
     print('peer addresses achieved (IP,port):', [adr for adr in zip(peer_IPs, peer_ports)])
 
-    ################
-    # parallel_tcp_client_send_req(ip1, int(port1), 'GET Redsox.jpg:' + str(100) + '\n', received_bytes_list, 0)
-    # print('received_bytes_list:', received_bytes_list)
-    ###############
-
     print('\nsending parallel requests for data blocks ...')
     data_block_queue = queue.Queue()
-    for i in range(0, num_blocks):
+    # for i in range(num_blocks+2):
+    for i in range(83):
         data_block_queue.put_nowait(i)
     i = 0
     while not data_block_queue.empty():
@@ -84,7 +84,7 @@ def p2p_request_file(host, port, request):
         t.start()
 
         time.sleep(2)
-        print(' -> threads count:', i)
+        print(' -> threads count:', i+1)
         i += 1
 
     data_block_queue.join()
