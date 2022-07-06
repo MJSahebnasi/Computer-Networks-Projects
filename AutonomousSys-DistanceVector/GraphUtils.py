@@ -1,3 +1,10 @@
+def inittime_add_update_edge(node1, node2, weight):
+    """
+    for init time: won't send data on the network
+    """
+    node1.add_update_neighbors(node2.id, node2.host, node2.listening_port, weight)
+    node2.add_update_neighbors(node1.id, node1.host, node1.listening_port, weight)
+
 def extract_path(start_node, dest_node):
     """
     :param start_node: a Node object
