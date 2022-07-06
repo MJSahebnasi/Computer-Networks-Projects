@@ -8,10 +8,9 @@ class Node:
     Just use add_update_neighbor(). The routing_table will automatically be updated.
     """
 
-    def __init__(self, id, listening_port, sending_port, host):
+    def __init__(self, id, listening_port, host):
         self.id = id
         self.listening_port = listening_port
-        self.sending_port = sending_port
         self.host = host
 
         self.neighbors = []
@@ -29,48 +28,47 @@ class Node:
         self.neighbors.append(node_id)
         self.routing_table[node_id] = (node_id, weight)
 
+    def client_handler(self, connection):
+        """
+        just used in listening_server()
+        """
+        size = 1024 * 2
+        while True:
+            try:
+                data = connection.recv(size)
+                if data:
+                    print(f"received data in node {self.id}:", data)
+                    response = 'OK'.encode('UTF-8')
+                    connection.send(response)
+                else:
+                    raise socket.error('Client disconnected')
+            except:
+                connection.close()
+                return False
+
     def listening_server(self):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        except:
-            print("!!! Could not create socket !!!")
-            return
-
-        print("[-] Socket Created")
-
-        # bind socket
-        try:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s.bind((self.host, self.listening_port))
-            print("[-] Socket Bound to port " + str(self.listening_port))
         except:
-            print("!!! Bind Failed !!!")
+            print("!!! trouble with socket !!!")
             return
 
-        s.listen(10)
+        unaccepted_connections_allowed = 10
+        s.listen(unaccepted_connections_allowed)
         print(f"node {self.id} listening on port {self.listening_port} ...")
-
-        def client_handler(connection):
-            while True:
-                data = connection.recv(1024 * 2)
-                if not data:
-                    break
-                reply = "OK"
-                connection.sendall(reply)
-
-            print(f"data received in node {self.id} server:", data)
-
-            connection.close()
 
         while True:
             # blocking call, waits to accept a connection
             connection, adrs = s.accept()
             print("[-] Connected to " + adrs[0] + ":" + str(adrs[1]))
 
-            t = threading.Thread(target=client_handler, args=(connection,))
+            t = threading.Thread(target=self.client_handler, args=(connection,))
             t.setDaemon(True)
             t.start()
 
-        s.close()
+        # s.close()
 
     def send_data(self, server_host, server_port, data):
         """
@@ -80,10 +78,16 @@ class Node:
             tcp_socket.connect((server_host, server_port))
             tcp_socket.sendall(data)
 
+            print(f'data sent to server from node {self.id}')
+
             try:
                 response = tcp_socket.recv(2048)
+                if response:
+                    print(f"received response in node {self.id}:", response)
+                else:
+                    raise socket.error('Client disconnected')
             except:
                 print('!!! no response from server !!!')
-                return None
-
-            print('response:', response)
+                return False
+            finally:
+                tcp_socket.close()
