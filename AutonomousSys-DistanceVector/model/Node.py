@@ -1,7 +1,5 @@
 import socket
 import threading
-import selectors
-import types
 
 
 class Node:
