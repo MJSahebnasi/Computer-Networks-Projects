@@ -116,7 +116,7 @@ class Node:
                 data = connection.recv(size)
                 if data:
                     dict_data = json.loads(data.decode())
-                    print(f"received data in node {self.id}:", dict_data)
+                    print(f"new data received in node {self.id}")
                     self.update_routing_table(int(dict_data['node_id']), dict_data['table'])
                     response = 'OK'.encode('UTF-8')
                     connection.send(response)
