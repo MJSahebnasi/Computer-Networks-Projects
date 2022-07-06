@@ -18,7 +18,7 @@ def update_link(node1, node2, new_weight):
     # TODO
     # update edges (in neighbors list)
     # update routing_tables, how?
-    # notify neighbor nodes
+    # notify neighbor nodes: through network
     pass
 
 
@@ -33,8 +33,10 @@ def add_node(node_id, edges):
     :return: the newly created node
     """
 
+    # TODO notify neighbors through network
+
 
 def remove_node(node):
     # TODO
-    # update neighbors
+    # update neighbors through network
     pass
