@@ -62,7 +62,7 @@ class Node:
         while True:
             # blocking call, waits to accept a connection
             connection, adrs = s.accept()
-            print("[-] Connected to " + adrs[0] + ":" + str(adrs[1]))
+            # print("connected to " + adrs[0] + ":" + str(adrs[1]))
 
             t = threading.Thread(target=self.client_handler, args=(connection,))
             t.setDaemon(True)
@@ -81,7 +81,7 @@ class Node:
             print(f'data sent to server from node {self.id}')
 
             try:
-                response = tcp_socket.recv(2048)
+                response = tcp_socket.recv(2048).decode()
                 if response:
                     print(f"received response in node {self.id}:", response)
                 else:
