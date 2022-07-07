@@ -69,6 +69,11 @@ def program(nodes):
             w = int(cmnd_parts[3])
             node1 = find_node_by_id(nodes, id1)
             node2 = find_node_by_id(nodes, id2)
+            prev_w = node1.routing_table[node2.id][1]
+
+            if w > prev_w:
+                node1.remove_routs_starting_with(node2.id)
+                node2.remove_routs_starting_with(node1.id)
 
             node1.add_update_neighbors(node2.id, node2.host, node2.listening_port, w)
             node2.add_update_neighbors(node1.id, node1.host, node1.listening_port, w)

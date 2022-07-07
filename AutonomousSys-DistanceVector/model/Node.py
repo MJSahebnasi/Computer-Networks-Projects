@@ -46,6 +46,23 @@ class Node:
         del self.routing_table[id]
         self.send_table_to_neighbors()
 
+    def remove_routs_starting_with(self, node_id):
+        """
+        except for the starting node it self
+        (i.e doesn't remove the neighbor itself)
+        NOTE: after using this, call send_table_to_neighbors() manually
+        """
+        updated = False
+        to_remove = []
+        for id, info in self.routing_table.items():
+            if info[0] == node_id and id != node_id:
+                to_remove.append(id)
+                updated = True
+        for id in to_remove:
+            del self.routing_table[id]
+        if updated:
+            self.send_table_to_neighbors()
+
     def add_update_neighbors(self, node_id, host, port, weight):
         self.neighbors[node_id] = (host, port)
         self.routing_table[node_id] = (node_id, weight)
