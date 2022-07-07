@@ -1,4 +1,4 @@
-from GraphUtils import extract_path, find_node_by_id
+from GraphUtils import extract_path, find_node_by_id, add_node
 
 
 def help(valid_commands):
@@ -53,7 +53,8 @@ def program(nodes):
             weights = []
             for i in range(4, len(cmnd_parts), 2):
                 neighbor_id_s.append(int(cmnd_parts[i]))
-                weights.append(int(cmnd_parts[i+1]))
-            print(nodes, id, port, host, neighbor_id_s, weights)
+                weights.append(int(cmnd_parts[i + 1]))
+            new_node = add_node(nodes, id, port, host, neighbor_id_s, weights)
+            nodes.append(new_node)
         else:
             print('invalid command')

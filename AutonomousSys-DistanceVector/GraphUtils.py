@@ -72,7 +72,9 @@ def add_node(nodes, id, port, host, neighbor_id_s, weights):
     for i in range(len(neighbor_id_s)):
         neighbor = find_node_by_id(nodes, neighbor_id_s[i])
         inittime_add_update_edge(new_node, neighbor, weights[i])
-    # TODO notify neighbors through network
+        neighbor.send_table_to_neighbors()
+    new_node.send_table_to_neighbors()
+    return new_node
 
 
 def remove_node(node):
