@@ -1,6 +1,3 @@
-import copy
-
-
 def find_node_by_id(nodes, id):
     for node in nodes:
         if node is None:
@@ -34,15 +31,8 @@ def extract_path(nodes, start_node, dest_node, path):
         return False
     next_node = find_node_by_id(nodes, next_node_id)
 
-    # print(current_node)
-    # print(current_node.id)
-    # print(next_node)
-    # print(next_node.id)
-    # print(dest_node.id)
-    # print('######')
-
     if next_node.id == dest_node.id:
-        # dest reached
+        # destination reached
         path.append(dest_node.id)
         return True
 
