@@ -21,7 +21,7 @@ class Node:
         self.listening_port = listening_port
         self.host = host
         self.last_time_table_sent = time.time()
-        self.update_period = 10  # seconds
+        self.update_period = 30  # seconds
 
         self.neighbors = {}
         # contains (node_id: (host, port)) items
@@ -30,12 +30,12 @@ class Node:
         # contains {node_id: (next_node_id, path_cost)} key-value pairs
         # next_node_id determines the next node to see when routing to the node (with node_id)
 
-        # always listening:
+        # constantly listening:
         t = threading.Thread(target=self.listening_server)
         t.setDaemon(True)
         t.start()
 
-        # always updating:
+        # periodically updating:
         t = threading.Thread(target=self.periodic_update)
         t.setDaemon(True)
         t.start()
