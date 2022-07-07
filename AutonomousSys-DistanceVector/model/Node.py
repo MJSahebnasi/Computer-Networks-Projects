@@ -21,7 +21,7 @@ class Node:
         self.listening_port = listening_port
         self.host = host
         self.last_time_table_sent = time.time()
-        self.update_period = 30  # seconds
+        self.update_period = 20  # seconds
 
         self.neighbors = {}
         # contains (node_id: (host, port)) items

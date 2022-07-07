@@ -1,3 +1,16 @@
+import copy
+
+
+def find_node_by_id(nodes, id):
+    for node in nodes:
+        if node is None:
+            # first element
+            continue
+        if node.id == id:
+            return node
+    return None
+
+
 def inittime_add_update_edge(node1, node2, weight):
     """
     for init time: won't send data on the network
@@ -5,14 +18,36 @@ def inittime_add_update_edge(node1, node2, weight):
     node1.add_update_neighbors(node2.id, node2.host, node2.listening_port, weight)
     node2.add_update_neighbors(node1.id, node1.host, node1.listening_port, weight)
 
-def extract_path(start_node, dest_node):
+
+def extract_path(nodes, start_node, dest_node, path):
     """
+    :param nodes: list of all nodes
     :param start_node: a Node object
     :param dest_node: a Node object
     :return: nodes in the shortest path from start_node to dest_node
     """
-    pass
-    # TODO
+    current_node = start_node
+    next_node_id = current_node.routing_table.get(dest_node.id)[0]
+    if not next_node_id:
+        print('---false----')
+        # no path
+        return False
+    next_node = find_node_by_id(nodes, next_node_id)
+
+    # print(current_node)
+    # print(current_node.id)
+    # print(next_node)
+    # print(next_node.id)
+    # print(dest_node.id)
+    # print('######')
+
+    if next_node.id == dest_node.id:
+        # dest reached
+        path.append(dest_node.id)
+        return True
+
+    path.append(next_node.id)
+    return extract_path(nodes, next_node, dest_node, path)
 
 
 def update_link(node1, node2, new_weight):
