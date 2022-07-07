@@ -45,3 +45,15 @@ def program(nodes):
                 print('path:', path)
             else:
                 print('there is no path')
+        elif cmnd_parts[0] == "add_node":
+            id = int(cmnd_parts[1])
+            port = int(cmnd_parts[2])
+            host = cmnd_parts[3]
+            neighbor_id_s = []
+            weights = []
+            for i in range(4, len(cmnd_parts), 2):
+                neighbor_id_s.append(int(cmnd_parts[i]))
+                weights.append(int(cmnd_parts[i+1]))
+            print(nodes, id, port, host, neighbor_id_s, weights)
+        else:
+            print('invalid command')

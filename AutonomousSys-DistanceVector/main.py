@@ -34,5 +34,5 @@ inittime_add_update_edge(nodes[5], nodes[10], 4)
 #         # skipping index 0 (the only None)
 #         print(f"node {node.id} table:", node.routing_table)
 
-time.sleep(1.5)
+time.sleep(5)
 program(nodes)

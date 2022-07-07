@@ -1,3 +1,6 @@
+from model.Node import Node
+
+
 def find_node_by_id(nodes, id):
     for node in nodes:
         if node is None:
@@ -54,17 +57,21 @@ def update_link(node1, node2, new_weight):
     pass
 
 
-def add_node(node_id, edges):
-    # TODO update parameters
+def add_node(nodes, id, port, host, neighbor_id_s, weights):
     """
     use it like this:
     my_nodes.append(add_node(...))
-
-    :param node_id: -daa-
-    :param edges: list of (other_node, weight) pairs
-    :return: the newly created node
+    :param id: new node's id
+    :param port: -daa-
+    :param host: -daa-
+    :param neighbor_id_s: -daa- 
+    :param weights: -daa-
+    :return: the newly created host
     """
-
+    new_node = Node(id, port, host)
+    for i in range(len(neighbor_id_s)):
+        neighbor = find_node_by_id(nodes, neighbor_id_s[i])
+        inittime_add_update_edge(new_node, neighbor, weights[i])
     # TODO notify neighbors through network
 
 
