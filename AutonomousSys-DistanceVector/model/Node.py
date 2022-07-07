@@ -41,6 +41,11 @@ class Node:
         t.setDaemon(True)
         t.start()
 
+    def remove_neighbor(self, id):
+        del self.neighbors[id]
+        del self.routing_table[id]
+        self.send_table_to_neighbors()
+
     def add_update_neighbors(self, node_id, host, port, weight):
         self.neighbors[node_id] = (host, port)
         self.routing_table[node_id] = (node_id, weight)
@@ -80,6 +85,10 @@ class Node:
         self.last_time_table_sent = time.time()
 
     def update_routing_table(self, neighbor_id, neighbor_table):
+
+        # handling remove
+        # for
+        ##########
         updated = False
         for node_id, info in neighbor_table.items():
             node_id = int(node_id)

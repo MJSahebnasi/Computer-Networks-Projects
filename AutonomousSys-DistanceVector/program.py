@@ -56,5 +56,24 @@ def program(nodes):
                 weights.append(int(cmnd_parts[i + 1]))
             new_node = add_node(nodes, id, port, host, neighbor_id_s, weights)
             nodes.append(new_node)
+        elif cmnd_parts[0] == "remove_node":
+            id = int(cmnd_parts[1])
+            node = find_node_by_id(nodes, id)
+            for neighbor_id, _ in node.neighbors:
+                neighbor = find_node_by_id(nodes, neighbor_id)
+                neighbor.remove_neighbor(id)
+            nodes = [n for n in nodes if n.id != id]
+        elif cmnd_parts[0] == "modify_link":
+            id1 = int(cmnd_parts[1])
+            id2 = int(cmnd_parts[2])
+            w = int(cmnd_parts[3])
+            node1 = find_node_by_id(nodes, id1)
+            node2 = find_node_by_id(nodes, id2)
+
+            node1.add_update_neighbors(node2.id, node2.host, node2.listening_port, w)
+            node2.add_update_neighbors(node1.id, node1.host, node1.listening_port, w)
+
+            node1.send_table_to_neighbors()
+            node2.send_table_to_neighbors()
         else:
             print('invalid command')
