@@ -85,11 +85,29 @@ class Node:
         self.last_time_table_sent = time.time()
 
     def update_routing_table(self, neighbor_id, neighbor_table):
+        updated = False
 
         # handling remove
-        # for
+        # neighbors_to_remove = []
+        # for node_id, info in self.routing_table.items():
+        #     # print('table - ', node_id, info)
+        #     if info[0] == neighbor_id and node_id != neighbor_id:
+        #         res = neighbor_table.get(node_id)
+        #         # print('res - ', res)
+        #         if not res:
+        #             # there used to be a node to which we could go (through the neighbor)
+        #             # but it's disconnected from neighbor
+        #             # so we remove it too
+        #             neighbors_to_remove.append(node_id)
+        #             updated = True
+        #
+        # # print('neigh to remove - ', neighbors_to_remove)
+        # for id in neighbors_to_remove:
+        #     print(id, type(id))
+        #     del self.routing_table[id]
+        # print('------info')
         ##########
-        updated = False
+
         for node_id, info in neighbor_table.items():
             node_id = int(node_id)
             cost = int(info[1])
