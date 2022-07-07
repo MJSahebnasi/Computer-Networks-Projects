@@ -21,7 +21,8 @@ class Node:
         self.listening_port = listening_port
         self.host = host
         self.last_time_table_sent = time.time()
-        self.update_period = 20  # seconds
+        self.update_period = 30  # seconds
+        self.has_sent_table_for_once = False
 
         self.neighbors = {}
         # contains (node_id: (host, port)) items
@@ -102,6 +103,9 @@ class Node:
 
     def periodic_update(self):
         while True:
+            if not self.has_sent_table_for_once:
+                self.send_table_to_neighbors()
+                self.has_sent_table_for_once = True
             if time.time() - self.last_time_table_sent > self.update_period:
                 # print(f'periodic update - node {self.id}')
                 self.send_table_to_neighbors()
