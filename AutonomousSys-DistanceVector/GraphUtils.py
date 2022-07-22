@@ -34,6 +34,9 @@ def extract_path(nodes, start_node, dest_node, path):
         return False
     next_node = find_node_by_id(nodes, next_node_id)
 
+    if not next_node:
+        return False
+
     if next_node.id == dest_node.id:
         # destination reached
         path.append(dest_node.id)

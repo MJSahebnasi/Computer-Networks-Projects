@@ -59,10 +59,19 @@ def program(nodes):
         elif cmnd_parts[0] == "remove_node":
             id = int(cmnd_parts[1])
             node = find_node_by_id(nodes, id)
-            for neighbor_id, _ in node.neighbors:
+            node.stop_event.set()
+            neighs = []
+            for neighbor_id, _ in node.neighbors.items():
+                print('remove neigh:', neighbor_id)
                 neighbor = find_node_by_id(nodes, neighbor_id)
+                neighbor.remove_routs_starting_with(id)
                 neighbor.remove_neighbor(id)
-            nodes = [n for n in nodes if n.id != id]
+                neighs.append(neighbor)
+            nodes = [n for n in nodes if ((n is not None) and (n.id != id))]
+            nodes.insert(0, None)
+            del node
+            for n in neighs:
+                n.send_table_to_neighbors()
         elif cmnd_parts[0] == "modify_link":
             id1 = int(cmnd_parts[1])
             id2 = int(cmnd_parts[2])

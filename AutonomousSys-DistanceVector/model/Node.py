@@ -23,6 +23,7 @@ class Node:
         self.last_time_table_sent = time.time()
         self.update_period = 30  # seconds
         self.has_sent_table_for_once = False
+        self.stop_event = threading.Event() # for both perio and server
 
         self.neighbors = {}
         # contains (node_id: (host, port)) items
@@ -32,19 +33,23 @@ class Node:
         # next_node_id determines the next node to see when routing to the node (with node_id)
 
         # constantly listening:
-        t = threading.Thread(target=self.listening_server)
+        t = threading.Thread(target=self.listening_server, args=(self.stop_event,))
         t.setDaemon(True)
         t.start()
 
         # periodically updating:
-        t = threading.Thread(target=self.periodic_update)
+        t = threading.Thread(target=self.periodic_update, args=(self.stop_event,))
         t.setDaemon(True)
         t.start()
 
     def remove_neighbor(self, id):
+        """
+        call send_table...() manually
+        """
+        # print(f'removing {id} from {self.id} ')
         del self.neighbors[id]
         del self.routing_table[id]
-        self.send_table_to_neighbors()
+        # print('table:', self.routing_table)
 
     def remove_routs_starting_with(self, node_id):
         """
@@ -60,8 +65,7 @@ class Node:
                 updated = True
         for id in to_remove:
             del self.routing_table[id]
-        if updated:
-            self.send_table_to_neighbors()
+        return updated
 
     def add_update_neighbors(self, node_id, host, port, weight):
         self.neighbors[node_id] = (host, port)
@@ -75,8 +79,11 @@ class Node:
         :return: nothing
         """
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp_socket:
-            tcp_socket.connect((server_host, server_port))
-            tcp_socket.sendall(data)
+            try:
+                tcp_socket.connect((server_host, server_port))
+                tcp_socket.sendall(data)
+            except:
+                print(f"!!!!!!!!!! error in node {self.id} send_data - server refusing")
 
             try:
                 response = tcp_socket.recv(2048).decode()
@@ -96,35 +103,14 @@ class Node:
         for neighbor_id, info in self.neighbors.items():
             host = info[0]
             port = info[1]
-            t = threading.Thread(target=self.send_data, args=(host, port, data))
-            t.setDaemon(True)
-            t.start()
+            # t = threading.Thread(target=self.send_data, args=(host, port, data))
+            # t.setDaemon(True)
+            # t.start()
+            self.send_data(host, port, data)
         self.last_time_table_sent = time.time()
 
     def update_routing_table(self, neighbor_id, neighbor_table):
         updated = False
-
-        # handling remove
-        # neighbors_to_remove = []
-        # for node_id, info in self.routing_table.items():
-        #     # print('table - ', node_id, info)
-        #     if info[0] == neighbor_id and node_id != neighbor_id:
-        #         res = neighbor_table.get(node_id)
-        #         # print('res - ', res)
-        #         if not res:
-        #             # there used to be a node to which we could go (through the neighbor)
-        #             # but it's disconnected from neighbor
-        #             # so we remove it too
-        #             neighbors_to_remove.append(node_id)
-        #             updated = True
-        #
-        # # print('neigh to remove - ', neighbors_to_remove)
-        # for id in neighbors_to_remove:
-        #     print(id, type(id))
-        #     del self.routing_table[id]
-        # print('------info')
-        ##########
-
         for node_id, info in neighbor_table.items():
             node_id = int(node_id)
             cost = int(info[1])
@@ -145,12 +131,12 @@ class Node:
         if updated:
             self.send_table_to_neighbors()
 
-    def periodic_update(self):
-        while True:
+    def periodic_update(self, stop_event):
+        while not stop_event.is_set():
             if not self.has_sent_table_for_once:
                 self.send_table_to_neighbors()
                 self.has_sent_table_for_once = True
-            if time.time() - self.last_time_table_sent > self.update_period:
+            elif time.time() - self.last_time_table_sent > self.update_period:
                 # print(f'periodic update - node {self.id}')
                 self.send_table_to_neighbors()
 
@@ -174,7 +160,7 @@ class Node:
                 connection.close()
                 return False
 
-    def listening_server(self):
+    def listening_server(self, stop_event):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -187,7 +173,7 @@ class Node:
         s.listen(unaccepted_connections_allowed)
         print(f"node {self.id} listening on port {self.listening_port} ...")
 
-        while True:
+        while not stop_event.is_set():
             # blocking call, waits to accept a connection
             connection, adrs = s.accept()
             # print("connected to " + adrs[0] + ":" + str(adrs[1]))
