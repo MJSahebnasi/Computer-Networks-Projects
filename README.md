@@ -25,3 +25,7 @@ After running main.py , you will see something like this:
 <img src="https://github.com/MJSahebnasi/Computer-Networks-Projects/blob/update/readme_img.PNG"></img>
 
 As you can see, there are several commands that you enter.
+
+
+## <b>a bug to be fixed:<b> 
+modifying the network is not working properly for all cases. The reason is that you cannot announce the changes applied on network by just sending a table. Another type of message is required.
