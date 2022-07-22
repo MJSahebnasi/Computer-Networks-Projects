@@ -27,5 +27,5 @@ After running main.py , you will see something like this:
 As you can see, there are several commands that you enter.
 
 
-## <b>a bug to be fixed:<b> 
-modifying the network is not working properly for all cases. The reason is that you cannot announce the changes applied on network by just sending a table. Another type of message is required.
+### <b>a bug to be fixed:<b> 
+modifying the network is not working properly in some cases. The reason is that you cannot announce the changes applied on network by just sending a modified routing table. Another type of message is required.
